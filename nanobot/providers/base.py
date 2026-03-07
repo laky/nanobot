@@ -95,18 +95,28 @@ class LLMProvider(ABC):
         model: str | None = None,
         max_tokens: int = 4096,
         temperature: float = 0.7,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        min_p: float | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
         reasoning_effort: str | None = None,
     ) -> LLMResponse:
         """
         Send a chat completion request.
-        
+
         Args:
             messages: List of message dicts with 'role' and 'content'.
             tools: Optional list of tool definitions.
             model: Model identifier (provider-specific).
             max_tokens: Maximum tokens in response.
             temperature: Sampling temperature.
-        
+            top_p: Nucleus sampling (0.0-1.0).
+            top_k: Top-k sampling.
+            min_p: Min-p sampling (0.0-1.0).
+            presence_penalty: Presence penalty (-2.0 to 2.0).
+            frequency_penalty: Frequency penalty (-2.0 to 2.0).
+
         Returns:
             LLMResponse with content and/or tool calls.
         """
