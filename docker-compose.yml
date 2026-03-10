@@ -6,6 +6,12 @@ x-common-config: &common-config
     - ~/.nanobot:/root/.nanobot
   extra_hosts:
     - "host.docker.internal:host-gateway"
+  devices:
+    - /dev/dri/card1:/dev/dri/card1
+    - /dev/dri/renderD128:/dev/dri/renderD128
+  environment:
+    - TZ=Europe/London
+    - HSA_OVERRIDE_GFX_VERSION=11.0.3  # gfx1103 for Ryzen 7000 (780M/760M)
 
 services:
   nanobot-personal:
@@ -20,11 +26,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          cpus: '4'
+          memory: 8G
         reservations:
-          cpus: '0.25'
-          memory: 256M
+          cpus: '0.5'
+          memory: 512M
 
   nanobot-group:
     container_name: nanobot-group
@@ -38,11 +44,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          cpus: '4'
+          memory: 8G
         reservations:
-          cpus: '0.25'
-          memory: 256M
+          cpus: '0.5'
+          memory: 512M
 
   nanobot-cli:
     <<: *common-config
