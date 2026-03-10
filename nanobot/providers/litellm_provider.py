@@ -186,6 +186,11 @@ class LiteLLMProvider(LLMProvider):
         model: str | None = None,
         max_tokens: int = 4096,
         temperature: float = 0.7,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        min_p: float | None = None,
+        presence_penalty: float | None = None,
+        frequency_penalty: float | None = None,
         reasoning_effort: str | None = None,
     ) -> LLMResponse:
         """
@@ -218,6 +223,20 @@ class LiteLLMProvider(LLMProvider):
             "max_tokens": max_tokens,
             "temperature": temperature,
         }
+
+        # Add optional sampling parameters
+        if top_p is not None:
+            kwargs["top_p"] = top_p
+        if top_k is not None:
+            kwargs["extra_body"] = kwargs.get("extra_body", {})
+            kwargs["extra_body"]["top_k"] = top_k
+        if min_p is not None:
+            kwargs["extra_body"] = kwargs.get("extra_body", {})
+            kwargs["extra_body"]["min_p"] = min_p
+        if presence_penalty is not None:
+            kwargs["presence_penalty"] = presence_penalty
+        if frequency_penalty is not None:
+            kwargs["frequency_penalty"] = frequency_penalty
 
         # Apply model-specific overrides (e.g. kimi-k2.5 temperature)
         self._apply_model_overrides(model, kwargs)

@@ -25,6 +25,8 @@ class CustomProvider(LLMProvider):
 
     async def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None,
                    model: str | None = None, max_tokens: int = 4096, temperature: float = 0.7,
+                   top_p: float | None = None, top_k: int | None = None, min_p: float | None = None,
+                   presence_penalty: float | None = None, frequency_penalty: float | None = None,
                    reasoning_effort: str | None = None) -> LLMResponse:
         kwargs: dict[str, Any] = {
             "model": model or self.default_model,
@@ -32,6 +34,20 @@ class CustomProvider(LLMProvider):
             "max_tokens": max(1, max_tokens),
             "temperature": temperature,
         }
+        if top_p is not None:
+            kwargs["top_p"] = top_p
+        if presence_penalty is not None:
+            kwargs["presence_penalty"] = presence_penalty
+        if frequency_penalty is not None:
+            kwargs["frequency_penalty"] = frequency_penalty
+        # top_k and min_p go in extra_body for OpenAI-compat endpoints
+        extra_body: dict[str, Any] = {}
+        if top_k is not None:
+            extra_body["top_k"] = top_k
+        if min_p is not None:
+            extra_body["min_p"] = min_p
+        if extra_body:
+            kwargs["extra_body"] = extra_body
         if reasoning_effort:
             kwargs["reasoning_effort"] = reasoning_effort
         if tools:
