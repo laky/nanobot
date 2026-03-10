@@ -184,7 +184,27 @@ class SubagentManager:
                     break
 
             if final_result is None:
-                final_result = "Task completed but no final response was generated."
+                logger.warning("Subagent [{}] reached max iterations ({})", task_id, max_iterations)
+                summary_prompt = (
+                    f"IMPORTANT: You have reached the maximum number of iterations ({max_iterations}). "
+                    "You cannot make any more tool calls.\n\n"
+                    "Please summarize:\n"
+                    "1. What you accomplished\n"
+                    "2. What remains incomplete\n"
+                    "3. Suggested next steps"
+                )
+                messages.append({"role": "user", "content": summary_prompt})
+
+                summary_response = await self.provider.chat(
+                    messages=messages,
+                    tools=[],
+                    model=self.model,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                )
+                final_result = summary_response.content or (
+                    f"Task incomplete after {max_iterations} iterations."
+                )
 
             logger.info("Subagent [{}] completed successfully", task_id)
             await self._announce_result(task_id, label, task, final_result, origin, "ok")

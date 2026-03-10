@@ -280,9 +280,28 @@ class AgentLoop:
 
         if final_content is None and iteration >= self.max_iterations:
             logger.warning("Max iterations ({}) reached", self.max_iterations)
-            final_content = (
-                f"I reached the maximum number of tool call iterations ({self.max_iterations}) "
-                "without completing the task. You can try breaking the task into smaller steps."
+            # Make one final call to summarize progress and propose next steps
+            summary_prompt = (
+                "IMPORTANT: You have reached the maximum number of tool call iterations "
+                f"({self.max_iterations}). You cannot make any more tool calls.\n\n"
+                "Please provide a brief response that:\n"
+                "1. Summarizes what you accomplished so far\n"
+                "2. Explains what remains to be done (if anything)\n"
+                "3. Suggests concrete next steps the user can take to continue\n\n"
+                "Be concise and helpful."
+            )
+            messages = self.context.add_user_message(messages, summary_prompt)
+
+            summary_response = await self.provider.chat(
+                messages=messages,
+                tools=[],  # No tools - force text response
+                model=self.model,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+            )
+            final_content = self._strip_think(summary_response.content) or (
+                f"I reached the maximum number of iterations ({self.max_iterations}) "
+                "without completing the task."
             )
 
         return final_content, tools_used, messages
